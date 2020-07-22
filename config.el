@@ -17,7 +17,7 @@
 ;; + `doom-big-font' -- used for `doom-big-font-mode'; use this for
 ;;   presentations or streaming.
 
-(setq doom-font (font-spec :family "Office Code Pro" :size 16))
+(setq doom-font (font-spec :family "Office Code Pro" :size 14))
 
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
@@ -65,7 +65,7 @@
   (key-chord-define-global "jv" 'avy-goto-char-2)
   (key-chord-define-global "jw" 'ace-window)
   (key-chord-define-global "jc" 'save-buffer)
-  (key-chord-define-global "fb" '+ivy/switch-workspace-buffer)
+  (key-chord-define-global "fb" '+ivy/switch-buffer)
   (key-chord-define-global "jf" 'counsel-projectile)
   (key-chord-define-global "jp" 'projectile-switch-project)
   (key-chord-define-global "cv" 'recenter))
@@ -89,16 +89,16 @@
 
 (setq-default cursor-type 'bar)
 
-(bind-key* "C-c h s" 'highlight-symbol-at-point)
-(bind-key* "C-c h u" 'unhighlight-regexp)
-
 (bind-key* "C-o" 'other-window)
 
 (after! lispy
   (setq lispy-compat '(edebug cider)))
 
+(after! cider
+  (setq nrepl-hide-special-buffers nil))
+
 (after! clojure-mode
-  (rainbow-delimiters-mode -1))
+  (remove-hook 'clojure-mode-hook #'rainbow-delimiters-mode))
 
 (after! clj-refactor
   (cljr-add-keybindings-with-prefix "C-c C-m")
@@ -162,15 +162,15 @@
 
 (bind-key* "<f10>" 'ccann/cycle-theme)
 
-(use-package! highlight-symbol
+(use-package! symbol-overlay
+  :bind (("C-c h s" . symbol-overlay-put)
+         ("C-c h r" . symbol-overlay-remove-all))
   :config
-  ;; (set-face-attribute 'highlight-symbol-face nil
-  ;;                     :background "default"
-  ;;                     :foreground "#FA009A")
-  (setq highlight-symbol-idle-delay 100)
-  (setq highlight-symbol-on-navigation-p t)
-  (add-hook 'prog-mode-hook #'highlight-symbol-mode)
-  (add-hook 'prog-mode-hook #'highlight-symbol-nav-mode))
+  (add-hook 'prog-mode-hook #'symbol-overlay-mode))
+
+(after! direnv
+  (setq direnv-show-paths-in-summary nil
+        direnv-always-show-summary nil))
 
 
 (custom-set-variables
@@ -179,7 +179,13 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(safe-local-variable-values
-   '((auto-fill-mode t)
+   '((flycheck-python-flake8-executable . "/Users/ccanning/dev/flavour/_env/bin/flake8")
+     (python-shell-interpreter . "/Users/ccanning/dev/flavour/_env/bin/python3")
+     (flycheck-python-flake8-executable "/Users/ccanning/dev/flavour/_env/bin/flake8")
+     (python-shell-interpreter "/Users/ccanning/dev/flavour/_env/bin/python3")
+     (cider-preferred-build-tool . clojure-cli)
+     (cider-clojure-cli-global-options . "-A:dev:test:frontend:dev/frontend")
+     (auto-fill-mode t)
      (cljr-libspec-whitelist "^thanks.spec" "thanks.oauth.provider.spec" "^integrant.repl$" "^day8.re-frame.http-fx$" "^tick.locale.*$" "^thanks.frontend.*$" "^spell-spec.expound$" "^duct.core.resource*" "^goog.string.format")
      (cider-repl-init-code "(do (dev) (go))")
      (cider-ns-refresh-after-fn . "dev/resume")
