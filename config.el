@@ -19,6 +19,9 @@
 
 (setq doom-font (font-spec :family "Office Code Pro" :size 14))
 
+;; TODO: when you use LSP make sure this is nil
+;; (setq lsp-signature-auto-activate nil)
+
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
 ;; (setq doom-font (font-spec :family "monospace" :size 12 :weight 'semi-light)
@@ -73,6 +76,9 @@
 (bind-key* "C-x b" 'ivy-switch-buffer)
 (bind-key* "C-s" 'counsel-grep-or-swiper)
 
+(after! ivy
+  (setq swiper-use-visual-line-p #'ignore))
+
 (use-package! ivy-posframe
   :config
   (setq ivy-posframe-display-functions-alist
@@ -125,24 +131,30 @@
 ;;   :after (visual-regexp))
 
 (defvar curr-theme nil)
+
 (defvar my-themes
   '(
     ;; dark themes
+    doom-opera
+    doom-one
+    doom-nord
     doom-wilmersdorf
     doom-spacegrey
-    doom-laserwave
     doom-city-lights
+    doom-solarized-dark
+    doom-sourcerer
     kaolin-temple
     kaolin-dark
-    kaolin-aurora
+    ;; kaolin-aurora
     kaolin-eclipse
-    kaolin-ocean
-    kaolin-galaxy
+    ;; kaolin-ocean
+    ;; kaolin-galaxy
     kaolin-valley-dark
-    doom-one
+    kaolin-blossom
 
     ;; Light Themes
     flatui
+    doom-nord-light
     kaolin-light
     kaolin-valley-light
     kaolin-breeze))
@@ -166,12 +178,30 @@
   :bind (("C-c h s" . symbol-overlay-put)
          ("C-c h r" . symbol-overlay-remove-all))
   :config
-  (add-hook 'prog-mode-hook #'symbol-overlay-mode))
+  (add-hook! 'prog-mode-hook #'symbol-overlay-mode)
+  (add-hook! 'text-mode-hook #'symbol-overlay-mode))
+
+(after! hl-todo
+  (add-hook 'text-mode-hook #'hl-todo-mode))
 
 (after! direnv
   (setq direnv-show-paths-in-summary nil
         direnv-always-show-summary nil))
 
+(use-package! highlight-indent-guides
+  :init
+  (setq highlight-indent-guides-method 'character
+        highlight-indent-guides-character ?|
+        ;; highlight-indent-guides-bitmap-function 'highlight-indent-guides--bitmap-dots
+        highlight-indent-guides-responsive 'top)
+  :config
+  (add-hook! 'yaml-mode-hook #'highlight-indent-guides-mode))
+
+(after! poetry
+  (setq poetry-tracking-mode 't))
+
+;; (after! py-isort
+;;   (add-hook 'before-save-hook 'py-isort-before-save))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -179,10 +209,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(safe-local-variable-values
-   '((flycheck-python-flake8-executable . "/Users/ccanning/dev/flavour/_env/bin/flake8")
-     (python-shell-interpreter . "/Users/ccanning/dev/flavour/_env/bin/python3")
-     (flycheck-python-flake8-executable "/Users/ccanning/dev/flavour/_env/bin/flake8")
-     (python-shell-interpreter "/Users/ccanning/dev/flavour/_env/bin/python3")
+   '(;; (flycheck-python-flake8-executable . "/Users/ccanning/dev/flavour/_env/bin/flake8")
+     ;; (python-shell-interpreter . "/Users/ccanning/dev/flavour/_env/bin/")
      (cider-preferred-build-tool . clojure-cli)
      (cider-clojure-cli-global-options . "-A:dev:test:frontend:dev/frontend")
      (auto-fill-mode t)
