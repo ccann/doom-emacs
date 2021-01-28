@@ -27,11 +27,6 @@
 ;; (setq doom-font (font-spec :family "monospace" :size 12 :weight 'semi-light)
 ;;       doom-variable-pitch-font (font-spec :family "sans" :size 13))
 
-;; There are two ways to load a theme. Both assume the theme is installed and
-;; available. You can either set `doom-theme' or manually load a theme with the
-;; `load-theme' function. This is the default:
-(setq doom-theme 'kaolin-temple)
-
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
@@ -159,6 +154,11 @@
     kaolin-valley-light
     kaolin-breeze))
 
+;; There are two ways to load a theme. Both assume the theme is installed and
+;; available. You can either set `doom-theme' or manually load a theme with the
+;; `load-theme' function. This is the default:
+(setq doom-theme (car my-themes))
+
 (defun ccann/cycle-theme ()
   "Cycle through a list of themes, my-themes."
   (interactive)
@@ -199,6 +199,67 @@
 
 (after! poetry
   (setq poetry-tracking-mode 't))
+
+(after! sql-mode
+  (sql-set-product 'postgres))
+
+(defadvice! +ipython-use-virtualenv (orig-fn &rest args)
+  "Use the Python binary from the current virtual environment."
+  :around #'+python/open-repl
+  (if (getenv "VIRTUAL_ENV")
+      (let ((python-shell-interpreter (executable-find "ipython")))
+        (apply orig-fn args))
+    (apply orig-fn args)))
+
+;; silence warnings when opening REPL
+(setq python-shell-prompt-detect-failure-warning nil)
+
+;; python console to the bottom
+(set-popup-rule! "^\\*Python*"  :side 'bottom :size .30)
+
+;; disable native completion
+(after! python
+  (setq python-shell-completion-native-enable nil))
+
+(after! lsp-python-ms
+  (set-lsp-priority! 'pyright 1))
+
+;;  In case we get a wrong workspace root, we can delete it with lsp-workspace-folders-remove
+(after! lsp-mode
+  (setq lsp-auto-guess-root nil))
+
+;; increase bytes read from subprocess
+(setq read-process-output-max (* 1024 1024))
+
+;; disable LSP-flycheck checker and use flake8
+(after! lsp-mode
+  (setq lsp-diagnostics-provider :none))
+
+(after! flycheck
+    (add-hook 'pyhon-mode-local-vars-hook
+            (lambda ()
+                (when (flycheck-may-enable-checker 'python-flake8)
+                  (flycheck-select-checker 'python-flake8)))))
+
+
+(after! lsp-mode
+  (setq lsp-eldoc-enable-hover nil
+        lsp-signature-auto-activate nil
+        ;; lsp-enable-on-type-formatting nil
+        ;; lsp-enable-symbol-highlighting nil
+        lsp-enable-file-watchers nil))
+
+
+(after! python-pytest
+  (setq python-pytest-arguments '("--color" "--failed-first"))
+  (evil-set-initial-state 'python-pytest-mode 'normal))
+
+(set-popup-rule! "^\\*pytest*" :side 'right :size .50)
+
+;; try to eliminate flickering
+(add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
+
+;; (setq flycheck-disabled-checkers 'lsp)
 
 ;; (after! py-isort
 ;;   (add-hook 'before-save-hook 'py-isort-before-save))

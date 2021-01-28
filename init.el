@@ -17,6 +17,8 @@
 (doom! :input
        ;;chinese
        ;;japanese
+       :os
+       macos                            ; MacOS-specific commands
 
        :completion
        company ; the ultimate code completion backend
@@ -90,7 +92,6 @@
        ;;gist              ; interacting with github gists
        lookup                         ; navigate your code and its documentation
        lsp
-       macos                    ; MacOS-specific commands
        magit                    ; a git porcelain for Emacs
        make                     ; run make tasks from Emacs
        ;;pass              ; password manager for nerds
@@ -131,7 +132,7 @@
        ;;julia             ; a better, faster MATLAB
        ;;kotlin            ; a better, slicker Java(Script)
        ;;latex             ; writing papers in Emacs has never been so fun
-       ;;lean
+       ;;leanpy
        ;;factor
        ;;ledger            ; an accounting system in Emacs
        ;;lua               ; one-based indices? one-based indices
@@ -143,7 +144,7 @@
        ;;php               ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
        ;;purescript        ; javascript, but functional
-       (python +poetry +lsp)  ; beautiful is better than ugly
+       (python +poetry +lsp +pyright)   ; beautiful is better than ugly
        ;;qt                ; the 'cutest' gui framework ever
        ;;racket            ; a DSL for DSLs
        ;;raku              ; the artist formerly known as perl6
