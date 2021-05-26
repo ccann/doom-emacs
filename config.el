@@ -17,7 +17,7 @@
 ;; + `doom-big-font' -- used for `doom-big-font-mode'; use this for
 ;;   presentations or streaming.
 
-(setq doom-font (font-spec :family "Office Code Pro" :size 14))
+(setq doom-font (font-spec :family "Fira Code" :size 14))
 
 ;; TODO: when you use LSP make sure this is nil
 ;; (setq lsp-signature-auto-activate nil)
@@ -92,6 +92,25 @@
 
 (bind-key* "C-o" 'other-window)
 
+(use-package! goto-chg
+  :config
+  (bind-key* "C-c b ," 'goto-last-change)
+  (bind-key* "C-c b ." 'goto-last-change-reverse))
+
+(defun ccann/set-mark-no-activate ()
+  "Set the mark without activating the region."
+  (interactive)
+  (push-mark))
+
+(use-package! visible-mark
+  :config
+  (setq visible-mark-max 1)
+  (setq visible-mark-faces '(visible-mark-face1
+                             visible-mark-face2
+                             visible-mark-face3))
+  (global-set-key (kbd "C-x m") 'ccann/set-mark-no-activate)
+  (global-visible-mark-mode +1))
+
 (after! lispy
   (setq lispy-compat '(edebug cider)))
 
@@ -153,6 +172,8 @@
     kaolin-light
     kaolin-valley-light
     kaolin-breeze))
+
+(setq enable-local-variables t)
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
@@ -254,15 +275,39 @@
   (setq python-pytest-arguments '("--color" "--failed-first"))
   (evil-set-initial-state 'python-pytest-mode 'normal))
 
+(setq py-isort-options
+      '("--thirdparty=gevent"
+        "--thirdparty=psycopg2"
+        "--thirdparty=datadog"
+        "--thirdparty=ujson"
+        "--thirdparty=boto"
+        "--thirdparty=boto3"
+        "--thirdparty=botocore"
+        "--thirdparty=jose"
+        "--thirdparty=werkzeug"
+        "--thirdparty=aiosql"
+        "--thirdparty=bottle"
+        "--thirdparty=six"
+        "--thirdparty=humps"
+        "--thirdparty=Crypto"
+        "--thirdparty=pybase"
+        "--thirdparty=bson"
+        "--thirdparty=ffprobe"
+        "--section-default=LOCALFOLDER"))
+
 (set-popup-rule! "^\\*pytest*" :side 'right :size .50)
 
 ;; try to eliminate flickering
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
+;; (good-scroll-mode -1)
+
 ;; (setq flycheck-disabled-checkers 'lsp)
 
 ;; (after! py-isort
 ;;   (add-hook 'before-save-hook 'py-isort-before-save))
+
+(advice-add 'risky-local-variable-p :override #'ignore)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -270,9 +315,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(safe-local-variable-values
-   '(;; (flycheck-python-flake8-executable . "/Users/ccanning/dev/flavour/_env/bin/flake8")
-     ;; (python-shell-interpreter . "/Users/ccanning/dev/flavour/_env/bin/")
-     (cider-preferred-build-tool . clojure-cli)
+   '((cider-preferred-build-tool . clojure-cli)
      (cider-clojure-cli-global-options . "-A:dev:test:frontend:dev/frontend")
      (auto-fill-mode t)
      (cljr-libspec-whitelist "^thanks.spec" "thanks.oauth.provider.spec" "^integrant.repl$" "^day8.re-frame.http-fx$" "^tick.locale.*$" "^thanks.frontend.*$" "^spell-spec.expound$" "^duct.core.resource*" "^goog.string.format")

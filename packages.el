@@ -14,6 +14,9 @@
 (package! kaolin-themes)
 (package! symbol-overlay)
 (package! highlight-indent-guides)
+(package! goto-chg)
+(package! visible-mark)
+(package! good-scroll)
 
 
 ;; To install a package directly from a remote git repo, you must specify a
