@@ -13,9 +13,8 @@
 (package! flatui-theme)
 (package! kaolin-themes)
 (package! symbol-overlay)
-;; (package! nano-emacs :recipe (:host github :repo "rougier/nano-emacs"))
-;; (package! nano-theme :recipe (:host github :repo "rougier/nano-theme"))
-
+(package! goto-chg)
+(package! visible-mark)
 
 ;; To install a package directly from a remote git repo, you must specify a
 ;; `:recipe'. You'll find documentation on what `:recipe' accepts here:
