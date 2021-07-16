@@ -9,10 +9,12 @@
 (package! key-chord)
 ;; (package! visual-regexp)
 ;; (package! visual-regexp-steroids)
-(package! ivy-posframe)
+;; (package! ivy-posframe)
 (package! flatui-theme)
 (package! kaolin-themes)
 (package! symbol-overlay)
+;; (package! nano-emacs :recipe (:host github :repo "rougier/nano-emacs"))
+;; (package! nano-theme :recipe (:host github :repo "rougier/nano-theme"))
 
 
 ;; To install a package directly from a remote git repo, you must specify a

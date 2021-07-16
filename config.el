@@ -17,7 +17,7 @@
 ;; + `doom-big-font' -- used for `doom-big-font-mode'; use this for
 ;;   presentations or streaming.
 
-(setq doom-font (font-spec :family "Office Code Pro" :size 14))
+(setq doom-font (font-spec :family "Fira Code" :size 12 :slant 'normal :weight 'normal))
 
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
@@ -62,16 +62,16 @@
 (use-package! key-chord
   :config
   (key-chord-mode 1)
-  (key-chord-define-global "jv" 'avy-goto-char-2)
-  (key-chord-define-global "jw" 'ace-window)
+  ;; (key-chord-define-global "jv" 'avy-goto-char-2)
+  ;; (key-chord-define-global "jw" 'ace-window)
   (key-chord-define-global "jc" 'save-buffer)
   (key-chord-define-global "fb" '+ivy/switch-buffer)
   (key-chord-define-global "jf" 'counsel-projectile)
   (key-chord-define-global "jp" 'projectile-switch-project)
   (key-chord-define-global "cv" 'recenter))
 
-(bind-key* "C-x b" 'ivy-switch-buffer)
-(bind-key* "C-s" 'counsel-grep-or-swiper)
+;; (bind-key* "C-x b" 'ivy-switch-buffer)
+;; (bind-key* "C-s" 'counsel-grep-or-swiper)
 
 (use-package! ivy-posframe
   :config
@@ -89,13 +89,15 @@
 
 (setq-default cursor-type 'bar)
 
-(bind-key* "C-o" 'other-window)
+;; (bind-key* "C-o" 'other-window)
 
 (after! lispy
   (setq lispy-compat '(edebug cider)))
 
 (after! cider
-  (setq nrepl-hide-special-buffers nil))
+  (setq nrepl-hide-special-buffers nil)
+  (setq cider-default-cljs-repl 'figwheel-main)
+  (setq cider-repl-pop-to-buffer-on-connect nil))
 
 (after! clojure-mode
   (remove-hook 'clojure-mode-hook #'rainbow-delimiters-mode))
@@ -123,11 +125,13 @@
 
 ;; (use-package! visual-regexp-steroids
 ;;   :after (visual-regexp))
+;; (use-package! nano-theme)
 
 (defvar curr-theme nil)
 (defvar my-themes
   '(
     ;; dark themes
+    nano
     doom-wilmersdorf
     doom-spacegrey
     doom-laserwave
@@ -173,28 +177,25 @@
         direnv-always-show-summary nil))
 
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(safe-local-variable-values
-   '((flycheck-python-flake8-executable . "/Users/ccanning/dev/flavour/_env/bin/flake8")
-     (python-shell-interpreter . "/Users/ccanning/dev/flavour/_env/bin/python3")
-     (flycheck-python-flake8-executable "/Users/ccanning/dev/flavour/_env/bin/flake8")
-     (python-shell-interpreter "/Users/ccanning/dev/flavour/_env/bin/python3")
-     (cider-preferred-build-tool . clojure-cli)
-     (cider-clojure-cli-global-options . "-A:dev:test:frontend:dev/frontend")
-     (auto-fill-mode t)
-     (cljr-libspec-whitelist "^thanks.spec" "thanks.oauth.provider.spec" "^integrant.repl$" "^day8.re-frame.http-fx$" "^tick.locale.*$" "^thanks.frontend.*$" "^spell-spec.expound$" "^duct.core.resource*" "^goog.string.format")
-     (cider-repl-init-code "(do (dev) (go))")
-     (cider-ns-refresh-after-fn . "dev/resume")
-     (cider-ns-refresh-before-fn . "dev/suspend")
-     (cljr-auto-clean-ns . t)
-     (cljr-favor-prefix-notation))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+(after! lsp-pyright
+  (setq lsp-pyright-auto-import-completions nil
+        lsp-pyright-typechecking-mode "off"))
+
+(after! electric
+  (setq tab-always-indent 'complete))
+
+(after! magit
+  (setq git-commit-summary-max-length 100))
+
+(setq fill-column 89)
+
+(setq +format-on-save-enabled-modes
+      '(not emacs-lisp-mode             ; elisp's mechanisms are good enough
+            sql-mode                    ; sqlformat is currently broken
+            tex-mode                    ; latexindent is broken
+            latex-mode
+            python-mode
+            clojure-mode
+            clojurescript-mode))
+
+(auto-fill-mode 1)
