@@ -16,7 +16,7 @@
 
 (doom! :completion
        company                          ; the ultimate code completion backend
-       (ivy +fuzzy +icons +childframe +prescient) ; a search engine for love and life
+       (ivy +icons +childframe +prescient) ; a search engine for love and life
 
        :ui
        doom                      ; what makes DOOM look the way it does
@@ -28,15 +28,15 @@
        ophints                ; highlight the region an operation acts on
        (popup +defaults)      ; tame sudden yet inevitable temporary windows
        pretty-code            ; ligatures or substitute text with pretty symbols
-       treemacs               ; a project drawer, like neotree but cooler
+       (treemacs +lsp)               ; a project drawer, like neotree but cooler
        vc-gutter              ; vcs diff in the fringe
        window-select          ; visually switch windows
        workspaces             ; tab emulation, persistence & separate workspaces
 
        :editor
-       evil
+       god
        file-templates              ; auto-snippets for empty files
-       (format +onsave)            ; automated prettiness
+       format                      ; automated prettiness
        lispy                       ; vim for lisp, for people who don't like vim
        word-wrap                   ; soft wrapping with language-aware indent
 
@@ -62,7 +62,7 @@
        terraform                        ; infrastructure as code
 
        :lang
-       clojure                   ; java with a lisp
+       (clojure +lsp)                   ; java with a lisp
        data                      ; config/data formats
        emacs-lisp                ; drown in parentheses
        json                      ; At least it ain't XML

@@ -54,19 +54,45 @@
   (setq lsp-ui-doc-enable nil)
   (setq lsp-ui-sideline-enable nil))
 
+;; (use-package! god-mode
+;;   :init
+;;   (defun god-mode-update-cursor ()
+;;     (setq cursor-type
+;;           (if (or god-local-mode buffer-read-only)
+;;               'box
+;;             'bar)))
+;;   (add-hook 'god-mode-enabled-hook 'god-mode-update-cursor)
+;;   (add-hook 'god-mode-disabled-hook 'god-mode-update-cursor)
+;;   :config
+;;   ;; (setq god-exempt-major-modes nil
+;;   ;;       god-exempt-predicates nil)
+;;   (god-mode-all))
+;;
+(after! god-mode
+  (add-to-list 'god-exempt-major-modes 'browse-kill-ring-mode)
+  (add-to-list 'god-exempt-major-modes 'cider-test-report-mode))
+
+;; ;; god-mode helpers
+;; (bind-key* "C-x C-1 " 'delete-other-windows)
+;; (bind-key* "C-x C-2" 'split-window-below)
+;; (bind-key* "C-x C-3" 'split-window-right)
+;; (bind-key* "<f10>" 'magit-status)
+;; (bind-key* "C-x C-0" 'delete-window)
+
+
+
 (use-package! key-chord
   :config
   (key-chord-mode 1)
-  ;; (key-chord-define-global "jv" 'avy-goto-char-2)
-  ;; (key-chord-define-global "jw" 'ace-window)
+  (key-chord-define-global "fd" 'god-local-mode)
   (key-chord-define-global "jc" 'save-buffer)
   (key-chord-define-global "fb" '+ivy/switch-buffer)
   (key-chord-define-global "jf" 'counsel-projectile)
   (key-chord-define-global "jp" 'projectile-switch-project)
   (key-chord-define-global "cv" 'recenter))
 
-;; (bind-key* "C-x b" 'ivy-switch-buffer)
-;; (bind-key* "C-s" 'counsel-grep-or-swiper)
+(bind-key* "C-x b" 'ivy-switch-buffer)
+(bind-key* "C-s" 'counsel-grep-or-swiper)
 
 (after! ivy
   (setq swiper-use-visual-line-p #'ignore))
@@ -87,26 +113,26 @@
 
 (setq-default cursor-type 'bar)
 
-;; (bind-key* "C-o" 'other-window)
+(bind-key* "C-o" 'other-window)
 
-(use-package! goto-chg
-  :config
-  (bind-key* "C-c b ," 'goto-last-change)
-  (bind-key* "C-c b ." 'goto-last-change-reverse))
+;; (use-package! goto-chg
+;;   :config
+;;   (bind-key* "C-c b ," 'goto-last-change)
+;;   (bind-key* "C-c b ." 'goto-last-change-reverse))
 
-(defun ccann/set-mark-no-activate ()
-  "Set the mark without activating the region."
-  (interactive)
-  (push-mark))
+;; (defun ccann/set-mark-no-activate ()
+;;   "Set the mark without activating the region."
+;;   (interactive)
+;;   (push-mark))
 
-(use-package! visible-mark
-  :config
-  (setq visible-mark-max 1)
-  (setq visible-mark-faces '(visible-mark-face1
-                             visible-mark-face2
-                             visible-mark-face3))
-  (global-set-key (kbd "C-x m") 'ccann/set-mark-no-activate)
-  (global-visible-mark-mode +1))
+;; (use-package! visible-mark
+;;   :config
+;;   (setq visible-mark-max 1)
+;;   (setq visible-mark-faces '(visible-mark-face1
+;;                              visible-mark-face2
+;;                              visible-mark-face3))
+;;   (global-set-key (kbd "C-x m") 'ccann/set-mark-no-activate)
+;;   (global-visible-mark-mode +1))
 
 (after! lispy
   (setq lispy-compat '(edebug cider)))
@@ -117,7 +143,9 @@
   (setq cider-repl-pop-to-buffer-on-connect nil))
 
 (after! clojure-mode
-  (remove-hook 'clojure-mode-hook #'rainbow-delimiters-mode))
+  (setq tab-always-indent 'complete)
+  (remove-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
+  (setq lsp-lens-enable t))
 
 (after! clj-refactor
   (cljr-add-keybindings-with-prefix "C-c C-m")
@@ -142,7 +170,6 @@
 
 ;; (use-package! visual-regexp-steroids
 ;;   :after (visual-regexp))
-;; (use-package! nano-theme)
 
 (defvar curr-theme nil)
 
@@ -196,14 +223,17 @@
 (bind-key* "<f10>" 'ccann/cycle-theme)
 
 (use-package! symbol-overlay
+  :hook ((prog-mode . symbol-overlay-mode)
+         (css-mode . symbol-overlay-mode)
+         (yaml-mode . symbol-overlay-mode)
+         (conf-mode . symbol-overlay-mode)
+         (markdown-mode . symbol-overlay-mode)
+         (help-mode . symbol-overlay-mode))
   :bind (("C-c h s" . symbol-overlay-put)
-         ("C-c h r" . symbol-overlay-remove-all))
-  :config
-  (add-hook! 'prog-mode-hook #'symbol-overlay-mode)
-  (add-hook! 'text-mode-hook #'symbol-overlay-mode))
+         ("C-c h r" . symbol-overlay-remove-all)))
 
 (after! hl-todo
-  (add-hook 'text-mode-hook #'hl-todo-mode))
+  (add-hook 'text-fmode-hook #'hl-todo-mode))
 
 (after! direnv
   (setq direnv-show-paths-in-summary nil
@@ -238,8 +268,9 @@
 ;; python console to the bottom
 (set-popup-rule! "^\\*Python*"  :side 'bottom :size .30)
 
-;; disable native completion
 (after! python
+  (setq tab-always-indent 'complete)
+  ;; disable native completion
   (setq python-shell-completion-native-enable nil))
 
 (after! lsp-python-ms
@@ -257,15 +288,16 @@
 (after! lsp-mode
   (setq
    ;;  In case we get a wrong workspace root, we can delete it with lsp-workspace-folders-remove
-   lsp-auto-guess-root nil
+   ;; lsp-auto-guess-root nil
    lsp-eldoc-enable-hover nil
-   lsp-signature-auto-activate nil
+   ;; lsp-signature-auto-activate nil
    ;; disable LSP-flycheck checker and use flake8
-   lsp-diagnostics-provider :none
+   ;; lsp-diagnostics-provider :none
    ;; lsp-enable-on-type-formatting nil
    ;; lsp-enable-symbol-highlighting nil
-   lsp-enable-file-watchers nil))
-
+   ;; lsp-enable-file-watchers nil
+   (setq lsp-clojure-custom-server-command '("bash" "-c" "/usr/local/bin/clojure-lsp"))
+   ))
 
 (after! python-pytest
   (setq python-pytest-arguments '("--color" "--failed-first"))
@@ -302,21 +334,10 @@
   (setq lsp-pyright-auto-import-completions nil
         lsp-pyright-typechecking-mode "off"))
 
-(after! electric
-  (setq tab-always-indent 'complete))
-
-(after! magit
-  (setq git-commit-summary-max-length 100))
+(setq git-commit-summary-max-length 100)
 
 (setq fill-column 89)
 
-(setq +format-on-save-enabled-modes
-      '(not emacs-lisp-mode             ; elisp's mechanisms are good enough
-            sql-mode                    ; sqlformat is currently broken
-            tex-mode                    ; latexindent is broken
-            latex-mode
-            python-mode
-            clojure-mode
-            clojurescript-mode))
-
 (auto-fill-mode 1)
+
+(bind-key* "C-M-." 'mark-sexp)
