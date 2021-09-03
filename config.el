@@ -32,7 +32,6 @@
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type t)
 
-
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
 ;; - `load!' for loading external *.el files relative to this one
@@ -50,36 +49,19 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
-(after! lsp-mode
-  (setq lsp-ui-doc-enable nil)
-  (setq lsp-ui-sideline-enable nil))
-
-;; (use-package! god-mode
-;;   :init
-;;   (defun god-mode-update-cursor ()
-;;     (setq cursor-type
-;;           (if (or god-local-mode buffer-read-only)
-;;               'box
-;;             'bar)))
-;;   (add-hook 'god-mode-enabled-hook 'god-mode-update-cursor)
-;;   (add-hook 'god-mode-disabled-hook 'god-mode-update-cursor)
-;;   :config
-;;   ;; (setq god-exempt-major-modes nil
-;;   ;;       god-exempt-predicates nil)
-;;   (god-mode-all))
-;;
 (after! god-mode
   (add-to-list 'god-exempt-major-modes 'browse-kill-ring-mode)
   (add-to-list 'god-exempt-major-modes 'cider-test-report-mode))
 
-;; ;; god-mode helpers
-;; (bind-key* "C-x C-1 " 'delete-other-windows)
-;; (bind-key* "C-x C-2" 'split-window-below)
-;; (bind-key* "C-x C-3" 'split-window-right)
-;; (bind-key* "<f10>" 'magit-status)
-;; (bind-key* "C-x C-0" 'delete-window)
+(after! magit
+  (setq git-commit-style-convention-checks
+        (remove 'overlong-summary-line git-commit-style-convention-checks)))
 
-
+;; (defun ccann/switch-to-project-buffer-if-in-project (arg)
+;;   (interactive "P")
+;;   (if (or arg (not (projectile-project-p)))
+;;       (+ivy/switch-buffer)
+;;     (+ivy/switch-workspace-buffer)))
 
 (use-package! key-chord
   :config
@@ -88,7 +70,7 @@
   (key-chord-define-global "jc" 'save-buffer)
   (key-chord-define-global "fb" '+ivy/switch-buffer)
   (key-chord-define-global "jf" 'counsel-projectile)
-  (key-chord-define-global "jp" 'projectile-switch-project)
+  (key-chord-define-global "jp" 'counsel-projectile-switch-project)
   (key-chord-define-global "cv" 'recenter))
 
 (bind-key* "C-x b" 'ivy-switch-buffer)
@@ -134,18 +116,66 @@
 ;;   (global-set-key (kbd "C-x m") 'ccann/set-mark-no-activate)
 ;;   (global-visible-mark-mode +1))
 
+(after! lsp-mode
+  ;; https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
+  (setq lsp-enable-symbol-highlighting nil)
+  (setq lsp-lens-enable nil)
+  (setq lsp-clojure-custom-server-command '("bash" "-c" "/usr/local/bin/clojure-lsp"))
+  (setq lsp-modeline-code-actions-enable 't)
+  (setq lsp-signature-render-documentation 't)
+  ;; disable to use cider indentation
+  (setq lsp-enable-indentation 't)
+  ;; disable to use cider completion
+  (setq lsp-completion-enable 't)
+  (setq lsp-enable-file-watchers nil)
+
+  ;; choose one either cider or lsp to control eldoc
+  (setq cider-eldoc-display-for-symbol-at-point nil) ; disable cider showing eldoc during symbol at point
+  (setq lsp-eldoc-enable-hover 't))
+
+(setq-hook! lsp-ui-mode
+  lsp-ui-doc-enable nil)
+(setq-hook! lsp-ui-mode
+  lsp-ui-sideline-enable nil)
+(setq-hook! lsp-ui-mode
+  lsp-ui-sideline-show-code-actions nil)
+
 (after! lispy
   (setq lispy-compat '(edebug cider)))
 
 (after! cider
   (setq nrepl-hide-special-buffers nil)
   (setq cider-default-cljs-repl 'figwheel-main)
-  (setq cider-repl-pop-to-buffer-on-connect nil))
+  (setq cider-repl-pop-to-buffer-on-connect nil)
+
+  (defun portal.api/open ()
+    (interactive)
+    (cider-nrepl-sync-request:eval
+     "(require 'portal.api) (portal.api/tap) (portal.api/open)"))
+
+  (defun portal.api/clear ()
+    (interactive)
+    (cider-nrepl-sync-request:eval "(portal.api/clear)"))
+
+  (defun portal.api/clear ()
+    (interactive)
+    (cider-nrepl-sync-request:eval "(portal.api/clear)"))
+
+  ;; Example key mappings for doom emacs
+  (map! :map clojure-mode-map
+        ;; cmd  + o
+        :n "s-o" #'portal.api/open
+        ;; ctrl + l
+        :n "C-l" #'portal.api/clear)
+
+  ;; NOTE: You do need to have portal on the class path and the easiest way I know
+  ;; how is via a clj user or project alias.
+  (setq cider-clojure-cli-global-options "-A:portal"))
 
 (after! clojure-mode
   (setq tab-always-indent 'complete)
-  (remove-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
-  (setq lsp-lens-enable t))
+  (setq company-minimum-prefix-length 1)
+  (remove-hook 'clojure-mode-hook #'rainbow-delimiters-mode))
 
 (after! clj-refactor
   (cljr-add-keybindings-with-prefix "C-c C-m")
@@ -163,6 +193,58 @@
           ("dfs" . "net.danielcompton.defn-spec-alpha")
           ("ig" . "integrant.core"))))
 
+;;;;;;;;;;;;
+;; python ;;
+;;;;;;;;;;;;
+
+(after! python
+  (setq tab-always-indent 'complete)
+  ;; silence warnings when opening REPL
+  (setq python-shell-prompt-detect-failure-warning nil)
+  ;; python console to the bottom
+  (set-popup-rule! "^\\*Python*" :side 'bottom :size 0.3)
+  (setq python-pytest-arguments '("--color" "--failed-first"))
+  (set-popup-rule! "^\\*pytest*" :side 'right :size 0.5)
+  (add-hook! 'lsp-mode-hook
+    (set-lsp-priority! 'pyright 1)))
+
+(add-hook! 'python-mode-local-vars-hook
+  (lambda ()
+    (when (flycheck-may-enable-checker 'python-flake8)
+      (flycheck-select-checker 'python-flake8))))
+
+(setq python-pytest-executable "docker-compose run --rm -e PYTHONPATH=. -e API_SQLALCHEMY_DATABASE_URI=\"postgres://flair:flair@db:5432/flair_test\" -e API_RQ_DEFAULT_URL=\"redis://redis:6379/10\" -e API_RQ_SCHEDULER_URL=\"redis://redis:6379/10\" --entrypoint='pytest' flair --disable-warnings -vv")
+
+(after! py-isort
+  (setq py-isort-options
+        '("--thirdparty=gevent"
+          "--thirdparty=psycopg2"
+          "--thirdparty=datadog"
+          "--thirdparty=ujson"
+          "--thirdparty=boto"
+          "--thirdparty=boto3"
+          "--thirdparty=botocore"
+          "--thirdparty=jose"
+          "--thirdparty=werkzeug"
+          "--thirdparty=aiosql"
+          "--thirdparty=bottle"
+          "--thirdparty=six"
+          "--thirdparty=humps"
+          "--thirdparty=Crypto"
+          "--thirdparty=pybase"
+          "--thirdparty=bson"
+          "--thirdparty=ffprobe"
+          "--section-default=LOCALFOLDER")))
+
+(add-hook! 'lsp-pyright-after-open-hook
+  (setq lsp-pyright-auto-import-completions nil
+        lsp-pyright-typechecking-mode "off"))
+
+;; (after! poetry
+;;   (setq poetry-tracking-mode 't))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; (use-package! visual-regexp
 ;;   :config
 ;;   (bind-key* "C-c r r" 'vr/replace)
@@ -176,8 +258,8 @@
 (defvar my-themes
   '(
     ;; dark themes
-    doom-opera
     doom-one
+    doom-opera
     doom-nord
     doom-wilmersdorf
     doom-spacegrey
@@ -248,91 +330,19 @@
   :config
   (add-hook! 'yaml-mode-hook #'highlight-indent-guides-mode))
 
-(after! poetry
-  (setq poetry-tracking-mode 't))
-
 (after! sql-mode
   (sql-set-product 'postgres))
-
-(defadvice! +ipython-use-virtualenv (orig-fn &rest args)
-  "Use the Python binary from the current virtual environment."
-  :around #'+python/open-repl
-  (if (getenv "VIRTUAL_ENV")
-      (let ((python-shell-interpreter (executable-find "ipython")))
-        (apply orig-fn args))
-    (apply orig-fn args)))
-
-;; silence warnings when opening REPL
-(setq python-shell-prompt-detect-failure-warning nil)
-
-;; python console to the bottom
-(set-popup-rule! "^\\*Python*"  :side 'bottom :size .30)
-
-(after! python
-  (setq tab-always-indent 'complete)
-  ;; disable native completion
-  (setq python-shell-completion-native-enable nil))
-
-(after! lsp-python-ms
-  (set-lsp-priority! 'pyright 1))
 
 ;; increase bytes read from subprocess
 (setq read-process-output-max (* 1024 1024))
 
-(after! flycheck
-    (add-hook 'pyhon-mode-local-vars-hook
-            (lambda ()
-                (when (flycheck-may-enable-checker 'python-flake8)
-                  (flycheck-select-checker 'python-flake8)))))
-
-(after! lsp-mode
-  (setq
-   ;;  In case we get a wrong workspace root, we can delete it with lsp-workspace-folders-remove
-   ;; lsp-auto-guess-root nil
-   lsp-eldoc-enable-hover nil
-   ;; lsp-signature-auto-activate nil
-   ;; disable LSP-flycheck checker and use flake8
-   ;; lsp-diagnostics-provider :none
-   ;; lsp-enable-on-type-formatting nil
-   ;; lsp-enable-symbol-highlighting nil
-   ;; lsp-enable-file-watchers nil
-   (setq lsp-clojure-custom-server-command '("bash" "-c" "/usr/local/bin/clojure-lsp"))
-   ))
-
-(after! python-pytest
-  (setq python-pytest-arguments '("--color" "--failed-first"))
-  (evil-set-initial-state 'python-pytest-mode 'normal))
-
-(setq py-isort-options
-      '("--thirdparty=gevent"
-        "--thirdparty=psycopg2"
-        "--thirdparty=datadog"
-        "--thirdparty=ujson"
-        "--thirdparty=boto"
-        "--thirdparty=boto3"
-        "--thirdparty=botocore"
-        "--thirdparty=jose"
-        "--thirdparty=werkzeug"
-        "--thirdparty=aiosql"
-        "--thirdparty=bottle"
-        "--thirdparty=six"
-        "--thirdparty=humps"
-        "--thirdparty=Crypto"
-        "--thirdparty=pybase"
-        "--thirdparty=bson"
-        "--thirdparty=ffprobe"
-        "--section-default=LOCALFOLDER"))
-
-(set-popup-rule! "^\\*pytest*" :side 'right :size .50)
+(add-hook! 'flycheck-mode-hook
+  (setq flycheck-posframe-mode nil))
 
 ;; try to eliminate flickering
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
 (advice-add 'risky-local-variable-p :override #'ignore)
-
-(after! lsp-pyright
-  (setq lsp-pyright-auto-import-completions nil
-        lsp-pyright-typechecking-mode "off"))
 
 (setq git-commit-summary-max-length 100)
 

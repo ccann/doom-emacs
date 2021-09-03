@@ -27,7 +27,7 @@
        modeline               ; snazzy, Atom-inspired modeline, plus API
        ophints                ; highlight the region an operation acts on
        (popup +defaults)      ; tame sudden yet inevitable temporary windows
-       pretty-code            ; ligatures or substitute text with pretty symbols
+       ligatures            ; ligatures or substitute text with pretty symbols
        (treemacs +lsp)               ; a project drawer, like neotree but cooler
        vc-gutter              ; vcs diff in the fringe
        window-select          ; visually switch windows
