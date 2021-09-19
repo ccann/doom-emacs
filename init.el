@@ -27,7 +27,6 @@
        modeline               ; snazzy, Atom-inspired modeline, plus API
        ophints                ; highlight the region an operation acts on
        (popup +defaults)      ; tame sudden yet inevitable temporary windows
-       ligatures            ; ligatures or substitute text with pretty symbols
        (treemacs +lsp)               ; a project drawer, like neotree but cooler
        vc-gutter              ; vcs diff in the fringe
        window-select          ; visually switch windows
@@ -37,7 +36,7 @@
        god
        file-templates              ; auto-snippets for empty files
        format                      ; automated prettiness
-       lispy                       ; vim for lisp, for people who don't like vim
+       ;; lispy                       ; vim for lisp, for people who don't like vim
        word-wrap                   ; soft wrapping with language-aware indent
 
        :emacs

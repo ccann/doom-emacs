@@ -116,37 +116,51 @@
 ;;   (global-set-key (kbd "C-x m") 'ccann/set-mark-no-activate)
 ;;   (global-visible-mark-mode +1))
 
-(after! lsp-mode
+(after! lsp
+  (setq
+   lsp-clojure-custom-server-command '("bash" "-c" "/usr/local/bin/clojure-lsp")
+   lsp-modeline-code-actions-enable 't
+   lsp-signature-auto-activate '(:after-completion :on-trigger-char :on-server-request)
+   ;; lsp-signature-render-documentation 't
+   ;; disable to use cider indentation
+   ;; lsp-enable-indentation 't
+   ;; disable to use cider completion
+   lsp-semantic-tokens-enable 't
+   lsp-completion-enable 't
+   lsp-enable-file-watchers 't
+   ;; lsp-eldoc-enable-hover nil
+   ;; lsp-eldoc-render-all 't
+   lsp-enable-symbol-highlighting nil   ; redundant
+   lsp-lens-enable nil
+   ;; lsp-signature-doc-lines 1
+   ;; lsp-signature-function 'lsp-signature-posframe
+   ;; lsp-signature-mode 't
+   ))
+
+
+(add-hook! 'flycheck-mode-hook
+  (setq flycheck-check-syntax-automatically
+        '(save)))
+
+(after! lsp-ui
   ;; https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
-  (setq lsp-enable-symbol-highlighting nil)
-  (setq lsp-lens-enable nil)
-  (setq lsp-clojure-custom-server-command '("bash" "-c" "/usr/local/bin/clojure-lsp"))
-  (setq lsp-modeline-code-actions-enable 't)
-  (setq lsp-signature-render-documentation 't)
-  ;; disable to use cider indentation
-  (setq lsp-enable-indentation 't)
-  ;; disable to use cider completion
-  (setq lsp-completion-enable 't)
-  (setq lsp-enable-file-watchers nil)
+  (setq
+   lsp-ui-sideline-enable nil
+   lsp-ui-doc-enable nil
+   lsp-ui-sideline-show-code-actions nil))
 
-  ;; choose one either cider or lsp to control eldoc
-  (setq cider-eldoc-display-for-symbol-at-point nil) ; disable cider showing eldoc during symbol at point
-  (setq lsp-eldoc-enable-hover 't))
 
-(setq-hook! lsp-ui-mode
-  lsp-ui-doc-enable nil)
-(setq-hook! lsp-ui-mode
-  lsp-ui-sideline-enable nil)
-(setq-hook! lsp-ui-mode
-  lsp-ui-sideline-show-code-actions nil)
 
 (after! lispy
   (setq lispy-compat '(edebug cider)))
 
 (after! cider
-  (setq nrepl-hide-special-buffers nil)
-  (setq cider-default-cljs-repl 'figwheel-main)
-  (setq cider-repl-pop-to-buffer-on-connect nil)
+  (setq nrepl-hide-special-buffers nil
+        ; disable clj-refactor adding ns to blank files
+        cljr-add-ns-to-blank-clj-files nil
+        cider-default-cljs-repl 'figwheel-main
+        cider-eldoc-display-for-symbol-at-point nil
+        cider-repl-pop-to-buffer-on-connect nil)
 
   (defun portal.api/open ()
     (interactive)
@@ -175,6 +189,8 @@
 (after! clojure-mode
   (setq tab-always-indent 'complete)
   (setq company-minimum-prefix-length 1)
+  (set-lookup-handlers! 'clj-refactor-mode nil)
+  (set-lookup-handlers! 'cider-mode nil)
   (remove-hook 'clojure-mode-hook #'rainbow-delimiters-mode))
 
 (after! clj-refactor
@@ -193,6 +209,8 @@
           ("dfs" . "net.danielcompton.defn-spec-alpha")
           ("ig" . "integrant.core"))))
 
+(setq fill-column 99)
+
 ;;;;;;;;;;;;
 ;; python ;;
 ;;;;;;;;;;;;
@@ -207,11 +225,6 @@
   (set-popup-rule! "^\\*pytest*" :side 'right :size 0.5)
   (add-hook! 'lsp-mode-hook
     (set-lsp-priority! 'pyright 1)))
-
-(add-hook! 'python-mode-local-vars-hook
-  (lambda ()
-    (when (flycheck-may-enable-checker 'python-flake8)
-      (flycheck-select-checker 'python-flake8))))
 
 (setq python-pytest-executable "docker-compose run --rm -e PYTHONPATH=. -e API_SQLALCHEMY_DATABASE_URI=\"postgres://flair:flair@db:5432/flair_test\" -e API_RQ_DEFAULT_URL=\"redis://redis:6379/10\" -e API_RQ_SCHEDULER_URL=\"redis://redis:6379/10\" --entrypoint='pytest' flair --disable-warnings -vv")
 
@@ -237,7 +250,7 @@
           "--section-default=LOCALFOLDER")))
 
 (add-hook! 'lsp-pyright-after-open-hook
-  (setq lsp-pyright-auto-import-completions nil
+  (setq lsp-pyright-auto-import-completions 't
         lsp-pyright-typechecking-mode "off"))
 
 ;; (after! poetry
@@ -335,9 +348,6 @@
 
 ;; increase bytes read from subprocess
 (setq read-process-output-max (* 1024 1024))
-
-(add-hook! 'flycheck-mode-hook
-  (setq flycheck-posframe-mode nil))
 
 ;; try to eliminate flickering
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
