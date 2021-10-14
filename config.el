@@ -121,21 +121,15 @@
    lsp-clojure-custom-server-command '("bash" "-c" "/usr/local/bin/clojure-lsp")
    lsp-modeline-code-actions-enable 't
    lsp-signature-auto-activate '(:after-completion :on-trigger-char :on-server-request)
-   ;; lsp-signature-render-documentation 't
-   ;; disable to use cider indentation
-   ;; lsp-enable-indentation 't
-   ;; disable to use cider completion
-   lsp-semantic-tokens-enable 't
-   lsp-completion-enable 't
-   lsp-enable-file-watchers 't
+   ;; ;; lsp-signature-render-documentation 't
+   ;; ;; disable to use cider completion
+   ;; lsp-semantic-tokens-enable 't
    ;; lsp-eldoc-enable-hover nil
-   ;; lsp-eldoc-render-all 't
+   lsp-eldoc-render-all 't
    lsp-enable-symbol-highlighting nil   ; redundant
-   lsp-lens-enable nil
-   ;; lsp-signature-doc-lines 1
+   lsp-signature-doc-lines 1
    ;; lsp-signature-function 'lsp-signature-posframe
-   ;; lsp-signature-mode 't
-   ))
+   lsp-signature-mode 't))
 
 
 (add-hook! 'flycheck-mode-hook
@@ -148,8 +142,6 @@
    lsp-ui-sideline-enable nil
    lsp-ui-doc-enable nil
    lsp-ui-sideline-show-code-actions nil))
-
-
 
 (after! lispy
   (setq lispy-compat '(edebug cider)))
@@ -297,10 +289,12 @@
 
 (setq enable-local-variables t)
 
+(advice-add 'risky-local-variable-p :override #'ignore)
+
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme (car my-themes))
+(setq doom-theme 'doom-sourcerer)
 
 (defun ccann/cycle-theme ()
   "Cycle through a list of themes, my-themes."

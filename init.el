@@ -36,7 +36,7 @@
        god
        file-templates              ; auto-snippets for empty files
        format                      ; automated prettiness
-       ;; lispy                       ; vim for lisp, for people who don't like vim
+       lispy                       ; vim for lisp, for people who don't like vim
        word-wrap                   ; soft wrapping with language-aware indent
 
        :emacs
