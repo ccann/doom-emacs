@@ -144,7 +144,25 @@
    lsp-ui-sideline-show-code-actions nil))
 
 (after! lispy
-  (setq lispy-compat '(edebug cider)))
+  (setq lispy-compat '(edebug cider god-mode))
+
+  (define-advice git-timemachine-mode (:after (&optional arg))
+    (if (bound-and-true-p git-timemachine-mode)
+        (lispy-mode -1)
+      (lispy-mode 1)))
+
+  (defun ccann/update-lispy ()
+    (if (or (eq major-mode 'emacs-lisp-mode)
+            (eq major-mode 'clojure-mode)
+            (eq major-mode 'clojurescript-mode)
+            (eq major-mode 'clojurec-mode))
+        (if (bound-and-true-p lispy-mode)
+            (lispy-mode -1)
+          (lispy-mode 1))
+      (lispy-mode -1)))
+
+  (add-hook 'god-mode-enabled-hook #'ccann/update-lispy)
+  (add-hook 'god-mode-disabled-hook #'ccann/update-lispy))
 
 (after! cider
   (setq nrepl-hide-special-buffers nil
