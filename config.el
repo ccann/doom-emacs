@@ -26,7 +26,7 @@
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/org/")
+;; (setq org-directory "~/org/")
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -53,7 +53,12 @@
   (add-to-list 'god-exempt-major-modes 'browse-kill-ring-mode)
   (add-to-list 'god-exempt-major-modes 'cider-test-report-mode))
 
+(defun disable-company ()
+  (interactive)
+  (company-mode -1))
+
 (after! magit
+  (add-hook 'magit-mode-hook #'disable-company)
   (setq git-commit-style-convention-checks
         (remove 'overlong-summary-line git-commit-style-convention-checks)))
 
@@ -77,7 +82,9 @@
 (bind-key* "C-s" 'counsel-grep-or-swiper)
 
 (after! ivy
-  (setq swiper-use-visual-line-p #'ignore))
+  (setq swiper-use-visual-line-p #'ignore)
+  (define-key swiper-map (kbd "M-.")
+    (lambda () (interactive) (insert (format "%s" (with-ivy-window (thing-at-point 'symbol)))))))
 
 (use-package! ivy-posframe
   :config
@@ -115,6 +122,7 @@
 ;;                              visible-mark-face3))
 ;;   (global-set-key (kbd "C-x m") 'ccann/set-mark-no-activate)
 ;;   (global-visible-mark-mode +1))
+(setq lsp-diagnostics-provider :none)
 
 (after! lsp
   (setq
@@ -133,14 +141,16 @@
 
 
 (add-hook! 'flycheck-mode-hook
-  (setq flycheck-check-syntax-automatically
-        '(save)))
+  (setq flycheck-check-syntax-automatically '(save))
+  (setq flycheck-display-errors-delay 30))
 
 (after! lsp-ui
   ;; https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
   (setq
    lsp-ui-sideline-enable nil
    lsp-ui-doc-enable nil
+   lsp-ui-doc-show-with-cursor nil
+   lsp-lens-enable nil
    lsp-ui-sideline-show-code-actions nil))
 
 (after! lispy
@@ -197,11 +207,17 @@
   (setq cider-clojure-cli-global-options "-A:portal"))
 
 (after! clojure-mode
+  (define-key company-mode-map (kbd "<tab>") 'company-indent-or-complete-common)
+  (add-hook! 'clojure-mode-hook #'subword-mode)
   (setq tab-always-indent 'complete)
-  (setq company-minimum-prefix-length 1)
+  (setq company-minimum-prefix-length 2)
+  (setq company-idle-delay 5)
+  (add-hook! 'clojure-mode-hook #'which-function-mode)
+  (add-hook! 'clojurescript-mode-hook #'which-function-mode)
   (set-lookup-handlers! 'clj-refactor-mode nil)
   (set-lookup-handlers! 'cider-mode nil)
-  (remove-hook 'clojure-mode-hook #'rainbow-delimiters-mode))
+  (remove-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
+  (bind-key* "C-c c d" 'dumb-jump-go))
 
 (after! clj-refactor
   (cljr-add-keybindings-with-prefix "C-c C-m")
@@ -225,7 +241,12 @@
 ;; python ;;
 ;;;;;;;;;;;;
 
+(after! flycheck
+  (setq-default flycheck-disabled-checkers '(python-pylint)))
+
 (after! python
+  (add-hook! 'python-mode-hook #'subword-mode)
+  (add-hook! 'python-mode-hook #'which-function-mode)
   (setq tab-always-indent 'complete)
   ;; silence warnings when opening REPL
   (setq python-shell-prompt-detect-failure-warning nil)
@@ -233,31 +254,34 @@
   (set-popup-rule! "^\\*Python*" :side 'bottom :size 0.3)
   (setq python-pytest-arguments '("--color" "--failed-first"))
   (set-popup-rule! "^\\*pytest*" :side 'right :size 0.5)
-  (add-hook! 'lsp-mode-hook
-    (set-lsp-priority! 'pyright 1)))
+  (setq pyimport-pyflakes-path "/opt/homebrew/bin/pyflakes")
+  (setq lsp-pylsp-plugins-pylint-enabled t)
+  (setq flycheck-checker 'python-flake8)
+  (setq-default flycheck-disabled-checkers '(python-pylint))
+  (setq lsp-pylsp-plugins-pycodestyle-max-line-length 99))
 
-(setq python-pytest-executable "docker-compose run --rm -e PYTHONPATH=. -e API_SQLALCHEMY_DATABASE_URI=\"postgres://flair:flair@db:5432/flair_test\" -e API_RQ_DEFAULT_URL=\"redis://redis:6379/10\" -e API_RQ_SCHEDULER_URL=\"redis://redis:6379/10\" --entrypoint='pytest' flair --disable-warnings -vv")
+(setq python-pytest-executable "docker-compose run --rm -e PYTHONPATH=. -e API_SQLALCHEMY_DATABASE_URI=\"postgres://flair:flair@db:5432/flair_test\" -e API_RQ_DEFAULT_URL=\"redis://redis:6379/10\" -e API_RQ_SCHEDULER_URL=\"redis://redis:6379/10\" --entrypoint='pytest' flair --disable-warnings -s -vv")
 
-(after! py-isort
-  (setq py-isort-options
-        '("--thirdparty=gevent"
-          "--thirdparty=psycopg2"
-          "--thirdparty=datadog"
-          "--thirdparty=ujson"
-          "--thirdparty=boto"
-          "--thirdparty=boto3"
-          "--thirdparty=botocore"
-          "--thirdparty=jose"
-          "--thirdparty=werkzeug"
-          "--thirdparty=aiosql"
-          "--thirdparty=bottle"
-          "--thirdparty=six"
-          "--thirdparty=humps"
-          "--thirdparty=Crypto"
-          "--thirdparty=pybase"
-          "--thirdparty=bson"
-          "--thirdparty=ffprobe"
-          "--section-default=LOCALFOLDER")))
+;; (after! py-isort
+;;   (setq py-isort-options
+;;         '("--thirdparty=gevent"
+;;           "--thirdparty=psycopg2"
+;;           "--thirdparty=datadog"
+;;           "--thirdparty=ujson"
+;;           "--thirdparty=boto"
+;;           "--thirdparty=boto3"
+;;           "--thirdparty=botocore"
+;;           "--thirdparty=jose"
+;;           "--thirdparty=werkzeug"
+;;           "--thirdparty=aiosql"
+;;           "--thirdparty=bottle"
+;;           "--thirdparty=six"
+;;           "--thirdparty=humps"
+;;           "--thirdparty=Crypto"
+;;           "--thirdparty=pybase"
+;;           "--thirdparty=bson"
+;;           "--thirdparty=ffprobe"
+;;           "--section-default=LOCALFOLDER")))
 
 (add-hook! 'lsp-pyright-after-open-hook
   (setq lsp-pyright-auto-import-completions 't
@@ -281,6 +305,8 @@
 (defvar my-themes
   '(
     ;; dark themes
+    doom-lantern
+    doom-badger
     doom-one
     doom-opera
     doom-nord
@@ -299,7 +325,7 @@
     kaolin-blossom
 
     ;; Light Themes
-    flatui
+    ;; flatui
     doom-nord-light
     kaolin-light
     kaolin-valley-light
@@ -373,3 +399,38 @@
 (auto-fill-mode 1)
 
 (bind-key* "C-M-." 'mark-sexp)
+
+
+(defun display-ansi-colors ()
+  (interactive)
+  (ansi-color-apply-on-region (point-min) (point-max)))
+
+(use-package! jenkinsfile-mode)
+
+(use-package! dockerfile-mode
+  :mode "\\Dockerfile\\'")
+
+(use-package! expand-region
+  :bind (("C-=" . er/expand-region)
+         ("C-c m m" . er/mark-symbol)
+         ("C-c m w" . er/mark-word)))
+
+(defun my/zoom-in ()
+  "Increase font size by 10 points"
+  (interactive)
+  (set-face-attribute 'default nil
+                      :height
+                      (+ (face-attribute 'default :height)
+                         10)))
+
+(defun my/zoom-out ()
+  "Decrease font size by 10 points"
+  (interactive)
+  (set-face-attribute 'default nil
+                      :height
+                      (- (face-attribute 'default :height)
+                         10)))
+
+;; change font size, interactively
+(global-set-key (kbd "M-=") 'my/zoom-in)
+(global-set-key (kbd "M--") 'my/zoom-out)

@@ -54,7 +54,7 @@
        editorconfig                ; let someone else argue about tabs vs spaces
        (eval +overlay)             ; run code, run (also, repls)
        lookup                      ; navigate your code and its documentation
-       (lsp +peek)
+       (lsp :completion ivy +peek)
        magit                            ; a git porcelain for Emacs
        make                             ; run make tasks from Emacs
        rgb                              ; creating color strings
@@ -68,7 +68,7 @@
        javascript                ; all(hope(abandon(ye(who(enter(here))))))
        latex                     ; writing papers in Emacs has never been so fun
        markdown                  ; writing docs for people to ignore
-       (python +pyenv +lsp +pyright) ; beautiful is better than ugly
+       (python +pyenv +lsp +pyright)
        sh                            ; she sells {ba,z,fi}sh shells on the C xor
        web                           ; the tubes
        yaml                          ; JSON, but readable
