@@ -71,9 +71,11 @@
 (use-package! key-chord
   :config
   (key-chord-mode 1)
+  (setq key-chord-safety-interval-backward 0)
+  (setq key-chord-safety-interval-forward 0)
   (key-chord-define-global "fd" 'god-local-mode)
   (key-chord-define-global "jc" 'save-buffer)
-  (key-chord-define-global "fb" '+ivy/switch-buffer)
+  (key-chord-define-global "fb" 'ivy-switch-buffer)
   (key-chord-define-global "jf" 'counsel-projectile)
   (key-chord-define-global "jp" 'counsel-projectile-switch-project)
   (key-chord-define-global "cv" 'recenter))
